@@ -1,8 +1,12 @@
+mod camera;
 mod color;
+mod constants;
 mod hit;
 mod material;
 mod matrix;
+mod random;
 mod ray;
+mod render;
 mod scene;
 mod vector;
 

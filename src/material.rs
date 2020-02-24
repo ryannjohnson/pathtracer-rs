@@ -1,10 +1,12 @@
 use super::color::Color;
 use super::hit::Hit;
 use super::ray::Ray;
-use rand::RngCore;
+use super::random as local_random;
 
 pub trait Material {
-    fn sample(&self, random: impl RngCore, hit: Hit, sampler: Sampler) -> Color;
+    fn sample<'a>(&self, random: &'a Box<dyn local_random::Rng + 'a>, hit: Hit, sampler: Box<dyn Sampler + 'a>) -> Color;
 }
 
-type Sampler = fn(ray: Ray) -> Color;
+pub trait Sampler {
+    fn sample(&self, ray: Ray) -> Color;
+}
