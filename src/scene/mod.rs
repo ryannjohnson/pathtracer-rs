@@ -1,3 +1,8 @@
+mod aabb;
+mod intersection;
+mod tree;
+mod triangle;
+
 use super::hit::Hit;
 use super::material::Material;
 use super::ray::Ray;

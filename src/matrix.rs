@@ -1,6 +1,6 @@
 use super::vector::Vector;
 
-const IDENTITY_MATRIX: Matrix = Matrix {
+pub const IDENTITY_MATRIX: Matrix = Matrix {
     x00: 1.0,
     x01: 0.0,
     x02: 0.0,
@@ -76,6 +76,31 @@ impl Matrix {
             x32,
             x33,
         }
+    }
+
+    pub fn rotate(&self, axis: Vector, radians: f64) -> Matrix {
+        let v = axis.normalize();
+        let s = radians.sin();
+        let c = radians.cos();
+        let t = 1.0 - c;
+        Matrix::new(
+            t * v.x * v.x + c,
+            t * v.x * v.y + v.z * s,
+            t * v.z * v.x - v.y * s,
+            0.0,
+            t * v.x * v.y - v.z * s,
+            t * v.y * v.y + c,
+            t * v.y * v.z + v.x * s,
+            0.0,
+            t * v.z * v.x + v.y * s,
+            t * v.y * v.z - v.x * s,
+            t * v.z * v.z + c,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+        )
     }
 
     pub fn set_translation(&self, v: Vector) -> Matrix {
