@@ -1,6 +1,7 @@
 use super::matrix::Matrix;
 use super::vector::Vector;
 
+#[derive(Clone, Copy)]
 pub struct Ray {
     pub origin: Vector,
     pub direction: Vector,

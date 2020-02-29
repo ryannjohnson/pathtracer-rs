@@ -5,7 +5,7 @@ pub struct Hit {
     pub from: Ray,
     pub position: Vector,
     pub normal: Vector,
-    pub uv: UVCoordinate,
+    // pub uv: UVCoordinate,
 }
 
 pub struct UVCoordinate {

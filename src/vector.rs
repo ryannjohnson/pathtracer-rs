@@ -16,6 +16,7 @@ pub const AXIS_Z: Vector = Vector {
     z: 1.0,
 };
 
+#[derive(Clone, Copy)]
 pub struct Vector {
     pub x: f64,
     pub y: f64,
@@ -25,6 +26,10 @@ pub struct Vector {
 impl Vector {
     pub fn new(x: f64, y: f64, z: f64) -> Vector {
         Vector { x, y, z }
+    }
+
+    pub fn zeros() -> Vector {
+        Vector::new(0.0, 0.0, 0.0)
     }
 
     pub fn add(&self, v: Vector) -> Vector {
@@ -39,8 +44,8 @@ impl Vector {
     /// If they're perpendicular, then zero is returned.
     ///
     /// https://en.wikipedia.org/wiki/Dot_product
-    pub fn dot_product(&self, v: Vector) -> Vector {
-        Vector::new(self.x * v.x, self.y * v.y, self.z * v.z)
+    pub fn dot_product(&self, v: Vector) -> f64 {
+        self.x * v.x + self.y * v.y + self.z * v.z
     }
 
     /// Measures the similarity between two vectors.
