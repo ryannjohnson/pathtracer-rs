@@ -2,7 +2,7 @@ use super::Rng;
 use rand;
 use std;
 
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub struct ThreadRng {
     rng: rand::rngs::ThreadRng,
 }

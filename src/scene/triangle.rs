@@ -14,12 +14,11 @@ pub trait Triangle {
 ///
 /// https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/ray-triangle-intersection-geometric-solution
 /// http://geomalgorithms.com/a06-_intersect-2.html
-pub fn intersect_triangle(ray: Ray, triangle: impl Triangle) -> Intersection {
+pub fn intersect_triangle(ray: Ray, triangle: impl Triangle) -> Option<Intersection> {
     let mut intersection = Intersection {
         distance_from_origin: 0.0,
         position: Vector::zeros(),
         normal: Vector::zeros(),
-        ok: false,
     };
 
     let v0v1 = triangle.vertex0().subtract(triangle.vertex1());
@@ -30,7 +29,7 @@ pub fn intersect_triangle(ray: Ray, triangle: impl Triangle) -> Intersection {
     let cosine_of_ray_and_normal = ray.direction.dot_product(intersection.normal);
 
     if cosine_of_ray_and_normal.abs() < EPSILON {
-        return intersection;
+        return None;
     }
 
     let v0r0 = triangle.vertex0().subtract(ray.origin);
@@ -40,7 +39,7 @@ pub fn intersect_triangle(ray: Ray, triangle: impl Triangle) -> Intersection {
         min_distance_from_ray_origin_to_plane / cosine_of_ray_and_normal;
 
     if intersection.distance_from_origin < EPSILON {
-        return intersection;
+        return None;
     }
 
     intersection.position = ray
@@ -51,24 +50,22 @@ pub fn intersect_triangle(ray: Ray, triangle: impl Triangle) -> Intersection {
     let pointEdge = intersection.position.subtract(triangle.vertex0());
     let edgesCrossProduct = triangleEdge.cross_product(pointEdge);
     if intersection.normal.dot_product(edgesCrossProduct) < 0.0 {
-        return intersection;
+        return None;
     }
 
     let triangleEdge = triangle.vertex2().subtract(triangle.vertex1());
     let pointEdge = intersection.position.subtract(triangle.vertex1());
     let edgesCrossProduct = triangleEdge.cross_product(pointEdge);
     if intersection.normal.dot_product(edgesCrossProduct) < 0.0 {
-        return intersection;
+        return None;
     }
 
     let triangleEdge = triangle.vertex0().subtract(triangle.vertex2());
     let pointEdge = intersection.position.subtract(triangle.vertex2());
     let edgesCrossProduct = triangleEdge.cross_product(pointEdge);
     if intersection.normal.dot_product(edgesCrossProduct) < 0.0 {
-        return intersection;
+        return None;
     }
 
-    intersection.ok = true;
-
-    intersection
+    Option::from(intersection)
 }
