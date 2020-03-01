@@ -11,7 +11,7 @@ use std::f64::MAX;
 pub trait TreeShape {
     fn aabb(&self) -> AABB;
     fn intersects_aabb(&self, aabb: AABB) -> bool;
-    fn intersect_ray(&self, ray: Ray) -> Intersection;
+    fn intersect(&self, ray: Ray) -> Option<Intersection>;
 }
 
 pub struct TreeNode {
@@ -108,8 +108,8 @@ pub fn build_tree_node(
 }
 
 pub struct TreeNodeIntersection {
-    hit: Hit,
-    nearest_shape_index: usize,
+    pub hit: Hit,
+    pub nearest_shape_index: usize,
 }
 
 /// IntersectTreeNode searches the node tree, intersecting each node in
@@ -124,32 +124,33 @@ pub fn intersect_tree_node(
     ray: Ray,
 ) -> Option<TreeNodeIntersection> {
     if tree_node.left.is_some() && tree_node.right.is_some() {
-        let left_intersection = tree_node.left.as_ref().unwrap().aabb.intersects_ray(ray);
-        let right_intersection = tree_node.right.as_ref().unwrap().aabb.intersects_ray(ray);
+        let left = tree_node.left.as_ref().unwrap();
+        let right = tree_node.right.as_ref().unwrap();
+
+        let left_intersection = left.aabb.intersects_ray(ray);
+        let right_intersection = right.aabb.intersects_ray(ray);
 
         if left_intersection.ok() && right_intersection.ok() {
             if left_intersection.tmin() < right_intersection.tmin() {
-                let tree_node_intersection =
-                    intersect_tree_node(shapes, tree_node.left.as_ref().unwrap(), ray);
+                let tree_node_intersection = intersect_tree_node(shapes, left, ray);
                 if tree_node_intersection.is_some() {
                     return tree_node_intersection;
                 }
-                return intersect_tree_node(shapes, tree_node.right.as_ref().unwrap(), ray);
+                return intersect_tree_node(shapes, right, ray);
             }
-            let tree_node_intersection =
-                intersect_tree_node(shapes, tree_node.right.as_ref().unwrap(), ray);
+            let tree_node_intersection = intersect_tree_node(shapes, right, ray);
             if tree_node_intersection.is_some() {
                 return tree_node_intersection;
             }
-            return intersect_tree_node(shapes, tree_node.left.as_ref().unwrap(), ray);
+            return intersect_tree_node(shapes, left, ray);
         }
 
         if left_intersection.ok() {
-            return intersect_tree_node(shapes, tree_node.left.as_ref().unwrap(), ray);
+            return intersect_tree_node(shapes, left, ray);
         }
 
         if right_intersection.ok() {
-            return intersect_tree_node(shapes, tree_node.right.as_ref().unwrap(), ray);
+            return intersect_tree_node(shapes, right, ray);
         }
 
         return None;
@@ -164,10 +165,11 @@ pub fn intersect_tree_node(
 
     for &shape_index in tree_node.shape_indexes.iter() {
         let shape = &shapes[shape_index];
-        let shape_intersection = shape.intersect_ray(ray);
-        if !shape_intersection.ok {
-            continue;
-        }
+
+        let shape_intersection = match shape.intersect(ray) {
+            Some(a) => a,
+            None => continue,
+        };
 
         if shape_intersection.distance_from_origin < aabb_intersection.tmin()
             || shape_intersection.distance_from_origin > aabb_intersection.tmax()

@@ -1,6 +1,6 @@
 pub const BLACK: Color = Color { r: 0.0, g: 0.0, b: 0.0 };
 
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub struct Color {
     pub r: f64,
     pub b: f64,
@@ -12,11 +12,11 @@ impl Color {
         Color { r, g, b }
     }
 
-    pub fn add(&self, c: &Color) -> Color {
+    pub fn add(&self, c: Color) -> Color {
         Color::new(self.r + c.r, self.g + c.g, self.b + c.b)
     }
 
-    pub fn multiply(&self, c: &Color) -> Color {
+    pub fn multiply(&self, c: Color) -> Color {
         Color::new(self.r * c.r, self.g * c.g, self.b * c.b)
     }
 }

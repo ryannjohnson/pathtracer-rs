@@ -1,6 +1,5 @@
 use super::camera::Camera;
 use super::color::{Color, BLACK};
-use super::material::Sampler;
 use super::random as local_random;
 use super::ray::Ray;
 use super::scene::Scene;
@@ -39,7 +38,12 @@ pub fn render<'a>(
     let y_step = y_ratio / (height - 1) as f64;
 
     let random = &mut local_random::thread::ThreadRng::new();
-    let random_box: Box<dyn local_random::Rng> = Box::new(random.clone());
+    let mut random_box: Box<dyn local_random::Rng> = Box::new(random.clone());
+
+    let scene_content = SceneContent {
+        random: &mut random_box,
+        scene: scene,
+    };
 
     for y_pixel in 0..height {
         let y = y_ratio * ((y_pixel as f64 / (height - 1) as f64) - 0.5) * -1.0;
@@ -51,7 +55,7 @@ pub fn render<'a>(
                 let x_rand = local_random::Rng::next_f64(random) * x_step;
                 let y_rand = local_random::Rng::next_f64(random) * y_step;
                 let ray = camera.cast(random, x + x_rand, y + y_rand);
-                colors[i] = sample_scene(&random_box, scene, ray, settings.bounce_depth);
+                colors[i] = scene_content.sample(ray, settings.bounce_depth);
             }
             let color = average_of(colors);
 
@@ -60,40 +64,27 @@ pub fn render<'a>(
     }
 }
 
-fn sample_scene<'a>(
-    random: &'a Box<dyn local_random::Rng + 'a>,
-    scene: &'a Box<dyn Scene + 'a>,
-    ray: Ray,
-    bounces_left: usize,
-) -> Color {
-    if bounces_left == 0 {
-        return BLACK;
-    }
-
-    let (hit, material, ok) = scene.intersect(ray);
-
-    if !ok {
-        return BLACK;
-    }
-
-    let next_sample: NextSample<'a> = NextSample {
-        random: random,
-        scene: scene,
-        bounces_left: bounces_left - 1,
-    };
-
-    (*material).sample(&random, hit, Box::new(next_sample))
+struct SceneContent<'a> {
+    random: &'a mut Box<dyn local_random::Rng>,
+    scene: &'a Box<dyn Scene>,
 }
 
-struct NextSample<'a> {
-    random: &'a Box<dyn local_random::Rng + 'a>,
-    scene: &'a Box<dyn Scene + 'a>,
-    bounces_left: usize,
-}
+impl<'a> SceneContent<'a> {
+    pub fn sample(&self, ray: Ray, bounces_left: usize) -> Color {
+        if bounces_left == 0 {
+            return BLACK;
+        }
 
-impl<'a> Sampler for NextSample<'a> {
-    fn sample(&self, ray: Ray) -> Color {
-        sample_scene(self.random, self.scene, ray, self.bounces_left)
+        self.scene.intersect(
+            ray,
+            Box::new(|scene_hit| {
+                (*scene_hit.material).sample(
+                    &mut self.random,
+                    scene_hit.hit,
+                    Box::new(|next_ray| self.sample(next_ray, bounces_left - 1)),
+                )
+            }),
+        )
     }
 }
 
@@ -101,7 +92,7 @@ fn average_of(colors: Vec<Color>) -> Color {
     let mut output = Color::new(0.0, 0.0, 0.0);
     let total = colors.len();
 
-    for color in &colors {
+    for &color in colors.iter() {
         output = output.add(color);
     }
 
