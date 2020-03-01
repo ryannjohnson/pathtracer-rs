@@ -1,10 +1,12 @@
 use super::super::super::color::{Color, BLACK};
+use super::super::super::hit::Hit;
 use super::super::super::material::Material;
+use super::super::super::random::Rng;
 use super::super::super::ray::Ray;
 use super::super::super::vector::Vector;
 use super::super::aabb::AABB;
 use super::super::tree;
-use super::super::{Scene, SceneHit};
+use super::super::Scene;
 use super::material::ObjMaterial;
 use super::triangle::ObjTriangle;
 use std::collections;
@@ -112,24 +114,28 @@ impl ObjScene {
             tree_shape_material_indexes,
         }
     }
+
+    fn intersect(&self, ray: Ray) -> Option<(Hit, &Box<dyn Material>)> {
+        tree::intersect_tree_node(&self.tree_shapes, &self.tree, ray).map(|intersection| {
+            let material_index = self.tree_shape_material_indexes[intersection.nearest_shape_index];
+            (intersection.hit, &self.materials[material_index])
+        })
+    }
 }
 
 impl Scene for ObjScene {
-    fn intersect<'a>(&self, ray: Ray, callback: Box<dyn Fn(SceneHit) -> Color + 'a>) -> Color {
-        let color_option =
-            tree::intersect_tree_node(&self.tree_shapes, &self.tree, ray).map(|intersection| {
-                let material_index =
-                    self.tree_shape_material_indexes[intersection.nearest_shape_index];
-
-                callback(SceneHit {
-                    hit: intersection.hit,
-                    material: &self.materials[material_index],
-                })
-            });
-
-        match color_option {
-            Some(a) => a,
-            None => BLACK,
+    fn sample(&self, random: &mut Box<dyn Rng>, ray: Ray, bounce_depth: usize) -> Color {
+        if bounce_depth == 0 {
+            return BLACK;
         }
+
+        let (hit, material) = match self.intersect(ray) {
+            Some(a) => a,
+            None => return BLACK,
+        };
+
+        material.sample(random, hit, Box::new(|next_ray| {
+            self.sample(random, ray, bounce_depth - 1)
+        }))
     }
 }

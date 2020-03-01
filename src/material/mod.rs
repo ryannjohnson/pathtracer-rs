@@ -4,8 +4,8 @@ pub mod specular;
 use super::color::Color;
 use super::hit::Hit;
 use super::ray::Ray;
-use super::random as local_random;
+use super::random::Rng;
 
 pub trait Material {
-    fn sample<'a>(&self, random: &'a mut Box<dyn local_random::Rng>, hit: Hit, sampler: Box<dyn Fn(Ray) -> Color + 'a>) -> Color;
+    fn sample<'a>(&self, random: &'a mut Box<dyn Rng>, hit: Hit, sampler: Box<dyn FnMut(Ray) -> Color + 'a>) -> Color;
 }

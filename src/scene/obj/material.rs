@@ -21,7 +21,7 @@ impl Material for ObjMaterial {
         &self,
         random: &'a mut Box<dyn Rng>,
         hit: Hit,
-        sampler: Box<dyn Fn(Ray) -> Color + 'a>,
+        sampler: Box<dyn FnMut(Ray) -> Color + 'a>,
     ) -> Color {
         let mut color = BLACK;
 
