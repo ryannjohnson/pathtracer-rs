@@ -1,6 +1,6 @@
 mod aabb;
 mod intersection;
-mod obj;
+pub mod obj;
 mod tree;
 mod triangle;
 

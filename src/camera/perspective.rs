@@ -8,16 +8,17 @@ use std::f64::consts::{FRAC_PI_2, PI};
 
 const TAU: f64 = PI * 2.0;
 
-pub struct Perspective {
+#[derive(Clone, Copy)]
+pub struct PerspectiveCamera {
     depth_of_field_distance: f64,
     depth_of_field_radius: f64,
     field_of_view: f64,
     transformation_matrix: Matrix,
 }
 
-impl Perspective {
-    pub fn new() -> Perspective {
-        Perspective {
+impl PerspectiveCamera {
+    pub fn new() -> PerspectiveCamera {
+        PerspectiveCamera {
             depth_of_field_distance: 0.0,
             depth_of_field_radius: 0.0,
             field_of_view: 30.0,
@@ -25,21 +26,27 @@ impl Perspective {
         }
     }
 
-    pub fn set_depth_of_field(&mut self, distance: f64, radius: f64) {
-        self.depth_of_field_distance = distance;
-        self.depth_of_field_radius = radius;
+    pub fn set_depth_of_field(&self, distance: f64, radius: f64) -> PerspectiveCamera {
+        let mut c = self.clone();
+        c.depth_of_field_distance = distance;
+        c.depth_of_field_radius = radius;
+        c
     }
 
-    pub fn set_field_of_view(&mut self, fov: f64) {
-        self.field_of_view = fov;
+    pub fn set_field_of_view(&self, fov: f64) -> PerspectiveCamera {
+        let mut c = self.clone();
+        c.field_of_view = fov;
+        c
     }
 
-    pub fn set_transformation_matrix(&mut self, m: Matrix) {
-        self.transformation_matrix = m;
+    pub fn set_transformation_matrix(&self, m: Matrix) -> PerspectiveCamera {
+        let mut c = self.clone();
+        c.transformation_matrix = m;
+        c
     }
 }
 
-impl Camera for Perspective {
+impl Camera for PerspectiveCamera {
     /// Cast converts the x and y coordinates into a Ray that can be cast
     /// from that point on the 2D plane.
     ///

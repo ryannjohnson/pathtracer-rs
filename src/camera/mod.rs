@@ -1,4 +1,4 @@
-mod perspective;
+pub mod perspective;
 
 use super::ray::Ray;
 use super::random::Rng;

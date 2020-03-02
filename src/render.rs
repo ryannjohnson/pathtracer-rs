@@ -10,14 +10,14 @@ pub struct RenderSettings {
 
 pub trait ImageWriter {
     fn height(&self) -> usize;
-    fn set(&self, x: usize, y: usize, color: Color);
+    fn set(&mut self, x: usize, y: usize, color: Color);
     fn width(&self) -> usize;
 }
 
 pub fn render<'a>(
     scene: &'a Box<dyn Scene>,
     camera: &impl Camera,
-    image: &impl ImageWriter,
+    image: &mut impl ImageWriter,
     settings: &RenderSettings,
 ) {
     let height = image.height();

@@ -110,4 +110,25 @@ impl Matrix {
         m.x23 = v.z;
         m
     }
+
+    pub fn translate(&self, v: Vector) -> Matrix {
+        Matrix::new(
+            self.x00,
+            self.x01,
+            self.x02,
+            self.x03 + v.x,
+            self.x10,
+            self.x11,
+            self.x12,
+            self.x13 + v.y,
+            self.x20,
+            self.x21,
+            self.x22,
+            self.x23 + v.z,
+            self.x30,
+            self.x31,
+            self.x32,
+            self.x33,
+        )
+    }
 }

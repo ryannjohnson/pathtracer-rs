@@ -1,14 +1,15 @@
-mod camera;
+pub mod camera;
 mod color;
 mod constants;
 mod hit;
+pub mod image_writer;
 mod material;
-mod matrix;
+pub mod matrix;
 mod random;
 mod ray;
-mod render;
-mod scene;
-mod vector;
+pub mod render;
+pub mod scene;
+pub mod vector;
 
 #[cfg(test)]
 mod tests {
