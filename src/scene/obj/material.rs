@@ -1,7 +1,7 @@
 use super::super::super::color::{Color, BLACK};
 use super::super::super::hit::Hit;
+use super::super::super::material::{Material, MaterialSampler};
 use super::super::super::material::{diffuse, specular};
-use super::super::super::material::Material;
 use super::super::super::random::Rng;
 use super::super::super::ray::Ray;
 use wavefront_obj::mtl;
@@ -21,7 +21,7 @@ impl Material for ObjMaterial {
         &self,
         random: &'a mut Box<dyn Rng>,
         hit: Hit,
-        sampler: Box<dyn FnMut(Ray) -> Color + 'a>,
+        sampler: Box<dyn MaterialSampler + 'a>,
     ) -> Color {
         let mut color = BLACK;
 
@@ -34,7 +34,7 @@ impl Material for ObjMaterial {
                 direction: diffuse::bounce(random, hit.normal),
             };
 
-            let color_from_scene = sampler(ray);
+            let color_from_scene = sampler.sample(random, ray);
             let color_to_camera = color_from_scene.multiply(to_color(self.source.color_diffuse));
 
             color = color.add(color_to_camera);
@@ -49,7 +49,7 @@ impl Material for ObjMaterial {
                 direction: specular::bounce(hit.normal, hit.from.direction),
             };
 
-            let color_from_scene = sampler(ray);
+            let color_from_scene = sampler.sample(random, ray);
             let color_to_camera = color_from_scene.multiply(to_color(self.source.color_diffuse));
 
             color = color.add(color_to_camera);

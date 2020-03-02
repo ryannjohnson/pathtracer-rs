@@ -36,8 +36,8 @@ pub fn render<'a>(
     let x_step = x_ratio / (width - 1) as f64;
     let y_step = y_ratio / (height - 1) as f64;
 
-    let random = &mut local_random::thread::ThreadRng::new();
-    let mut random_box: Box<dyn local_random::Rng> = Box::new(random.clone());
+    let mut thread_random = local_random::thread::ThreadRng::new();
+    let mut random: Box<dyn local_random::Rng> = Box::new(thread_random);
 
     for y_pixel in 0..height {
         let y = y_ratio * ((y_pixel as f64 / (height - 1) as f64) - 0.5) * -1.0;
@@ -46,10 +46,10 @@ pub fn render<'a>(
 
             let mut colors: Vec<Color> = Vec::with_capacity(settings.samples_per_ray);
             for i in 0..settings.samples_per_ray {
-                let x_rand = local_random::Rng::next_f64(random) * x_step;
-                let y_rand = local_random::Rng::next_f64(random) * y_step;
-                let ray = camera.cast(random, x + x_rand, y + y_rand);
-                colors[i] = scene.sample(&mut random_box, ray, settings.bounce_depth);
+                let x_rand = local_random::Rng::next_f64(&mut thread_random) * x_step;
+                let y_rand = local_random::Rng::next_f64(&mut thread_random) * y_step;
+                let ray = camera.cast(&mut thread_random, x + x_rand, y + y_rand);
+                colors[i] = scene.sample(&mut random, ray, settings.bounce_depth);
             }
             let color = average_of(colors);
 

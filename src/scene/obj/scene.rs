@@ -1,6 +1,6 @@
 use super::super::super::color::{Color, BLACK};
 use super::super::super::hit::Hit;
-use super::super::super::material::Material;
+use super::super::super::material::{Material, MaterialSampler};
 use super::super::super::random::Rng;
 use super::super::super::ray::Ray;
 use super::super::super::vector::Vector;
@@ -11,7 +11,7 @@ use super::material::ObjMaterial;
 use super::triangle::ObjTriangle;
 use std::collections;
 use std::f64::{MAX, MIN};
-use std::io;
+use std::{cell, io, rc};
 use wavefront_obj;
 
 pub struct ObjScene {
@@ -134,8 +134,22 @@ impl Scene for ObjScene {
             None => return BLACK,
         };
 
-        material.sample(random, hit, Box::new(|next_ray| {
-            self.sample(random, ray, bounce_depth - 1)
-        }))
+        let bouncer = Box::new(ObjSceneSampler {
+            scene: self,
+            bounce_depth,
+        });
+
+        material.sample(random, hit, bouncer)
+    }
+}
+
+struct ObjSceneSampler<'a> {
+    scene: &'a ObjScene,
+    bounce_depth: usize,
+}
+
+impl<'a> MaterialSampler for ObjSceneSampler<'a> {
+    fn sample(&self, random: &mut Box<dyn Rng>, ray: Ray) -> Color {
+        self.scene.sample(random, ray, self.bounce_depth - 1)
     }
 }
