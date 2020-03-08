@@ -78,12 +78,33 @@ impl Matrix {
         }
     }
 
+    pub fn multiply(&self, m: Matrix) -> Matrix {
+        Matrix::new(
+            self.x00 * m.x00 + self.x01 * m.x10 + self.x02 * m.x20 + self.x03 * m.x30,
+            self.x10 * m.x00 + self.x11 * m.x10 + self.x12 * m.x20 + self.x13 * m.x30,
+            self.x20 * m.x00 + self.x21 * m.x10 + self.x22 * m.x20 + self.x23 * m.x30,
+            self.x30 * m.x00 + self.x31 * m.x10 + self.x32 * m.x20 + self.x33 * m.x30,
+            self.x00 * m.x01 + self.x01 * m.x11 + self.x02 * m.x21 + self.x03 * m.x31,
+            self.x10 * m.x01 + self.x11 * m.x11 + self.x12 * m.x21 + self.x13 * m.x31,
+            self.x20 * m.x01 + self.x21 * m.x11 + self.x22 * m.x21 + self.x23 * m.x31,
+            self.x30 * m.x01 + self.x31 * m.x11 + self.x32 * m.x21 + self.x33 * m.x31,
+            self.x00 * m.x02 + self.x01 * m.x12 + self.x02 * m.x22 + self.x03 * m.x32,
+            self.x10 * m.x02 + self.x11 * m.x12 + self.x12 * m.x22 + self.x13 * m.x32,
+            self.x20 * m.x02 + self.x21 * m.x12 + self.x22 * m.x22 + self.x23 * m.x32,
+            self.x30 * m.x02 + self.x31 * m.x12 + self.x32 * m.x22 + self.x33 * m.x32,
+            self.x00 * m.x03 + self.x01 * m.x13 + self.x02 * m.x23 + self.x03 * m.x33,
+            self.x10 * m.x03 + self.x11 * m.x13 + self.x12 * m.x23 + self.x13 * m.x33,
+            self.x20 * m.x03 + self.x21 * m.x13 + self.x22 * m.x23 + self.x23 * m.x33,
+            self.x30 * m.x03 + self.x31 * m.x13 + self.x32 * m.x23 + self.x33 * m.x33,
+        )
+    }
+
     pub fn rotate(&self, axis: Vector, radians: f64) -> Matrix {
         let v = axis.normalize();
         let s = radians.sin();
         let c = radians.cos();
         let t = 1.0 - c;
-        Matrix::new(
+        let m = Matrix::new(
             t * v.x * v.x + c,
             t * v.x * v.y + v.z * s,
             t * v.z * v.x - v.y * s,
@@ -100,7 +121,8 @@ impl Matrix {
             0.0,
             0.0,
             1.0,
-        )
+        );
+        self.multiply(m)
     }
 
     pub fn set_translation(&self, v: Vector) -> Matrix {

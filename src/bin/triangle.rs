@@ -29,7 +29,7 @@ fn main() -> image::ImageResult<()> {
 
     let settings = render::RenderSettings {
         bounce_depth: 5,
-        samples_per_ray: 1000,
+        samples_per_ray: 50,
     };
 
     render::render(&s, &camera, &mut image_writer, &settings);

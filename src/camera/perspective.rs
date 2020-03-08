@@ -1,18 +1,18 @@
-use super::super::constants::EPSILON;
 use super::super::matrix::{Matrix, IDENTITY_MATRIX};
 use super::super::random;
 use super::super::ray::Ray;
 use super::super::vector;
 use super::Camera;
-use std::f64::consts::{FRAC_PI_2, PI};
+use std::f64::consts::PI;
 
+const RADIANS_PER_DEGREE: f64 = PI / 180.0;
 const TAU: f64 = PI * 2.0;
 
 #[derive(Clone, Copy)]
 pub struct PerspectiveCamera {
-    depth_of_field_distance: f64,
+    depth_of_field_distance: f64, // From lens
     depth_of_field_radius: f64,
-    field_of_view: f64,
+    field_of_view: f64, // Degrees
     transformation_matrix: Matrix,
 }
 
@@ -58,7 +58,7 @@ impl Camera for PerspectiveCamera {
     /// originate at the x, y coordinate of the original plane but will
     /// instead be cast to intersect the focal point in front of the camera.
     fn cast(&self, random: &mut impl random::Rng, x: f64, y: f64) -> Ray {
-        let field_of_view_radians = self.field_of_view * FRAC_PI_2;
+        let field_of_view_radians = self.field_of_view * RADIANS_PER_DEGREE;
 
         let m = IDENTITY_MATRIX
             .rotate(vector::AXIS_X, y * field_of_view_radians)
@@ -67,13 +67,13 @@ impl Camera for PerspectiveCamera {
         let direction = vector::AXIS_Z.transform(m);
 
         let focal_length = 1.0 / field_of_view_radians;
-        let center = vector::Vector::new(0.0, 0.0, -focal_length);
+        let center = vector::Vector::new(0.0, 0.0, focal_length * -1.0);
 
         let origin = center.add(direction.scale(focal_length));
 
         let mut ray = Ray::new(origin, direction).transform(self.transformation_matrix);
 
-        if self.depth_of_field_radius >= EPSILON {
+        if self.depth_of_field_radius > 0.0 {
             let focal_origin = ray
                 .origin
                 .add(ray.direction.scale(self.depth_of_field_distance));
