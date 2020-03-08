@@ -1,7 +1,7 @@
 use super::super::super::color::{Color, BLACK};
 use super::super::super::hit::Hit;
-use super::super::super::material::{Material, MaterialSampler};
 use super::super::super::material::{diffuse, specular};
+use super::super::super::material::{Material, MaterialSampler};
 use super::super::super::random::Rng;
 use super::super::super::ray::Ray;
 use wavefront_obj::mtl;
@@ -55,9 +55,10 @@ impl Material for ObjMaterial {
             color = color.add(color_to_camera);
         }
 
-        if self.source.color_emissive.is_some() {
-            color.add(to_color(self.source.color_emissive.unwrap()));
-        }
+        color = match self.source.color_emissive {
+            Some(color_emissive) => color.add(to_color(color_emissive)),
+            None => color,
+        };
 
         color
     }

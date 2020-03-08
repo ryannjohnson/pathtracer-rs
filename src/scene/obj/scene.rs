@@ -45,63 +45,81 @@ impl ObjScene {
         let mut aabb_min = Vector::new(MAX, MAX, MAX);
         let mut aabb_max = Vector::new(MIN, MIN, MIN);
 
-        for (i, object) in obj_set.objects.iter().enumerate() {
-            let vertexes = [
-                Vector::new(
-                    object.vertices[0].x,
-                    object.vertices[0].y,
-                    object.vertices[0].z,
-                ),
-                Vector::new(
-                    object.vertices[1].x,
-                    object.vertices[1].y,
-                    object.vertices[1].z,
-                ),
-                Vector::new(
-                    object.vertices[2].x,
-                    object.vertices[2].y,
-                    object.vertices[2].z,
-                ),
-            ];
+        let mut i = 0;
 
-            let normals = [
-                Vector::new(
-                    object.normals[0].x,
-                    object.normals[0].y,
-                    object.normals[0].z,
-                ),
-                Vector::new(
-                    object.normals[1].x,
-                    object.normals[1].y,
-                    object.normals[1].z,
-                ),
-                Vector::new(
-                    object.normals[2].x,
-                    object.normals[2].y,
-                    object.normals[2].z,
-                ),
-            ];
+        for object in obj_set.objects.iter() {
+            for geometry in object.geometry.iter() {
+                let material_name = geometry.material_name.clone().unwrap();
+                let material_index = material_indexes.get(&material_name).unwrap();
 
-            if object.geometry.len() == 0 {
-                panic!("object has no geometry");
-            }
+                for shape in geometry.shapes.iter() {
+                    match shape.primitive {
+                        wavefront_obj::obj::Primitive::Point(_) => continue,
+                        wavefront_obj::obj::Primitive::Line(_, _) => continue,
+                        wavefront_obj::obj::Primitive::Triangle(v0, v1, v2) => {
+                            let vertexes = [
+                                Vector::new(
+                                    object.vertices[v0.0].x,
+                                    object.vertices[v0.0].y,
+                                    object.vertices[v0.0].z,
+                                ),
+                                Vector::new(
+                                    object.vertices[v1.0].x,
+                                    object.vertices[v1.0].y,
+                                    object.vertices[v1.0].z,
+                                ),
+                                Vector::new(
+                                    object.vertices[v2.0].x,
+                                    object.vertices[v2.0].y,
+                                    object.vertices[v2.0].z,
+                                ),
+                            ];
 
-            let material_name = object.geometry[0].material_name.clone().unwrap();
-            let material_index = material_indexes.get(&material_name).unwrap();
+                            let mut normals: [Vector; 3];
 
-            let t = ObjTriangle { normals, vertexes };
+                            if v0.2.is_some() && v1.2.is_some() && v2.2.is_some() {
+                                normals = [
+                                    Vector::new(
+                                        object.vertices[v0.2.unwrap()].x,
+                                        object.vertices[v0.2.unwrap()].y,
+                                        object.vertices[v0.2.unwrap()].z,
+                                    ),
+                                    Vector::new(
+                                        object.vertices[v1.2.unwrap()].x,
+                                        object.vertices[v1.2.unwrap()].y,
+                                        object.vertices[v1.2.unwrap()].z,
+                                    ),
+                                    Vector::new(
+                                        object.vertices[v2.2.unwrap()].x,
+                                        object.vertices[v2.2.unwrap()].y,
+                                        object.vertices[v2.2.unwrap()].z,
+                                    ),
+                                ];
+                            } else {
+                                let v0v1 = vertexes[0].subtract(vertexes[1]);
+                                let v0v2 = vertexes[0].subtract(vertexes[2]);
+                                let normal = v0v1.cross_product(v0v2).normalize();
+                                normals = [normal, normal, normal];
+                            }
 
-            tree_shapes.push(Box::new(t));
-            tree_shape_indexes.push(i);
-            tree_shape_material_indexes.push(*material_index);
+                            let objTriangle = ObjTriangle { normals, vertexes };
 
-            for &vertex in t.vertexes.iter() {
-                aabb_min.x = aabb_min.x.min(vertex.x);
-                aabb_min.y = aabb_min.y.min(vertex.y);
-                aabb_min.z = aabb_min.z.min(vertex.z);
-                aabb_max.x = aabb_max.x.max(vertex.x);
-                aabb_max.y = aabb_max.y.max(vertex.y);
-                aabb_max.z = aabb_max.z.max(vertex.z);
+                            tree_shapes.push(Box::new(objTriangle));
+                            tree_shape_indexes.push(i);
+                            i += 1;
+                            tree_shape_material_indexes.push(*material_index);
+
+                            for &vertex in objTriangle.vertexes.iter() {
+                                aabb_min.x = aabb_min.x.min(vertex.x);
+                                aabb_min.y = aabb_min.y.min(vertex.y);
+                                aabb_min.z = aabb_min.z.min(vertex.z);
+                                aabb_max.x = aabb_max.x.max(vertex.x);
+                                aabb_max.y = aabb_max.y.max(vertex.y);
+                                aabb_max.z = aabb_max.z.max(vertex.z);
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -136,7 +154,7 @@ impl Scene for ObjScene {
 
         let bouncer = Box::new(ObjSceneSampler {
             scene: self,
-            bounce_depth,
+            bounce_depth: bounce_depth - 1,
         });
 
         material.sample(random, hit, bouncer)
@@ -150,6 +168,6 @@ struct ObjSceneSampler<'a> {
 
 impl<'a> MaterialSampler for ObjSceneSampler<'a> {
     fn sample(&self, random: &mut Box<dyn Rng>, ray: Ray) -> Color {
-        self.scene.sample(random, ray, self.bounce_depth - 1)
+        self.scene.sample(random, ray, self.bounce_depth)
     }
 }
