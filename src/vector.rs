@@ -73,6 +73,10 @@ impl Vector {
         (self.x.powi(2) + self.y.powi(2) + self.z.powi(2)).sqrt()
     }
 
+    pub fn multiply(&self, v: Vector) -> Vector {
+        Vector::new(self.x * v.x, self.y * v.y, self.z * v.z)
+    }
+
     pub fn normalize(&self) -> Vector {
         let length = self.length();
         Vector::new(self.x / length, self.y / length, self.z / length)

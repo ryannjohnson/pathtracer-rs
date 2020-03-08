@@ -47,8 +47,10 @@ pub fn render<'a>(
     );
 
     for y_pixel in 0..height {
+        // Positive is up.
         let y = y_ratio * ((y_pixel as f64 / (height - 1) as f64) - 0.5) * -1.0;
         for x_pixel in 0..width {
+            // Positive is right.
             let x = x_ratio * (x_pixel as f64 / (width - 1) as f64 - 0.5);
 
             let mut color = BLACK;

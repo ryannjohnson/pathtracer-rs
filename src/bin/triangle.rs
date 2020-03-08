@@ -11,7 +11,6 @@ use std::fs;
 
 fn main() -> image::ImageResult<()> {
     let camera_matrix = matrix::IDENTITY_MATRIX
-        .rotate(vector::AXIS_Y, PI)
         .rotate(vector::AXIS_X, PI / -4.3)
         .translate(vector::Vector::new(0.0, 5.0, 5.0));
 

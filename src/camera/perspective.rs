@@ -5,6 +5,11 @@ use super::super::vector;
 use super::Camera;
 use std::f64::consts::PI;
 
+const AXIS_Z_MIRROR: vector::Vector = vector::Vector {
+    x: 1.0,
+    y: 1.0,
+    z: -1.0,
+};
 const RADIANS_PER_DEGREE: f64 = PI / 180.0;
 const TAU: f64 = PI * 2.0;
 
@@ -57,6 +62,9 @@ impl Camera for PerspectiveCamera {
     /// When depth of field is applied, the origin of the ray will no longer
     /// originate at the x, y coordinate of the original plane but will
     /// instead be cast to intersect the focal point in front of the camera.
+    ///
+    /// With no transformations applied to the camera, it will point down the
+    /// negative Z-axis.
     fn cast(&self, random: &mut impl random::Rng, x: f64, y: f64) -> Ray {
         let field_of_view_radians = self.field_of_view * RADIANS_PER_DEGREE;
 
@@ -64,10 +72,11 @@ impl Camera for PerspectiveCamera {
             .rotate(vector::AXIS_X, y * field_of_view_radians)
             .rotate(vector::AXIS_Y, x * field_of_view_radians);
 
-        let direction = vector::AXIS_Z.transform(m);
+        // Mirror it so that the camera looks down the negative Z-axis.
+        let direction = vector::AXIS_Z.transform(m).multiply(AXIS_Z_MIRROR);
 
         let focal_length = 1.0 / field_of_view_radians;
-        let center = vector::Vector::new(0.0, 0.0, focal_length * -1.0);
+        let center = vector::Vector::new(0.0, 0.0, focal_length);
 
         let origin = center.add(direction.scale(focal_length));
 
