@@ -20,7 +20,7 @@ impl Image {
     }
 
     pub fn to_png8(&self, writer: impl io::Write) -> image::ImageResult<()> {
-        let mut data = vec![0; self.width * self.height * 9];
+        let mut data = vec![0; self.width * self.height * 3];
 
         for (i, &color) in self.colors.iter().enumerate() {
             data[i * 3] = to_u8(color.r);
