@@ -21,6 +21,8 @@ pub struct ObjScene {
     tree_shape_material_indexes: Vec<usize>,
 }
 
+unsafe impl Sync for ObjScene {}
+
 impl ObjScene {
     pub fn new(obj: &mut impl io::Read, mtl: &mut impl io::Read) -> ObjScene {
         let mut obj_string = String::new();

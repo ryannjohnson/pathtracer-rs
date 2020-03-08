@@ -1,3 +1,6 @@
+extern crate crossbeam_channel;
+extern crate crossbeam_utils;
+
 pub mod camera;
 mod color;
 mod constants;

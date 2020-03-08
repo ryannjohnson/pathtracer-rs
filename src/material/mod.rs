@@ -6,7 +6,7 @@ use super::hit::Hit;
 use super::random::Rng;
 use super::ray::Ray;
 
-pub trait Material {
+pub trait Material: Sync {
     fn sample<'a>(
         &self,
         random: &'a mut Box<dyn Rng>,
@@ -15,6 +15,6 @@ pub trait Material {
     ) -> Color;
 }
 
-pub trait MaterialSampler {
+pub trait MaterialSampler: Sync {
     fn sample<'a>(&self, random: &'a mut Box<dyn Rng>, ray: Ray) -> Color;
 }
