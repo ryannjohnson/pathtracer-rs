@@ -11,7 +11,7 @@ use super::material::ObjMaterial;
 use super::triangle::ObjTriangle;
 use std::collections;
 use std::f64::{MAX, MIN};
-use std::{cell, io, rc};
+use std::io;
 use wavefront_obj;
 
 pub struct ObjScene {
@@ -75,7 +75,7 @@ impl ObjScene {
                                 ),
                             ];
 
-                            let mut normals: [Vector; 3];
+                            let normals: [Vector; 3];
 
                             if v0.2.is_some() && v1.2.is_some() && v2.2.is_some() {
                                 normals = [
@@ -102,14 +102,14 @@ impl ObjScene {
                                 normals = [normal, normal, normal];
                             }
 
-                            let objTriangle = ObjTriangle { normals, vertexes };
+                            let obj_triangle = ObjTriangle { normals, vertexes };
 
-                            tree_shapes.push(Box::new(objTriangle));
+                            tree_shapes.push(Box::new(obj_triangle));
                             tree_shape_indexes.push(i);
                             i += 1;
                             tree_shape_material_indexes.push(*material_index);
 
-                            for &vertex in objTriangle.vertexes.iter() {
+                            for &vertex in obj_triangle.vertexes.iter() {
                                 aabb_min.x = aabb_min.x.min(vertex.x);
                                 aabb_min.y = aabb_min.y.min(vertex.y);
                                 aabb_min.z = aabb_min.z.min(vertex.z);

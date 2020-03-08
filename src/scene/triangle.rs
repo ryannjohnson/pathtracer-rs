@@ -46,24 +46,24 @@ pub fn intersect_triangle(ray: Ray, triangle: impl Triangle) -> Option<Intersect
         .origin
         .add(ray.direction.scale(intersection.distance_from_origin));
 
-    let triangleEdge = triangle.vertex1().subtract(triangle.vertex0());
-    let pointEdge = intersection.position.subtract(triangle.vertex0());
-    let edgesCrossProduct = triangleEdge.cross_product(pointEdge);
-    if intersection.normal.dot_product(edgesCrossProduct) < 0.0 {
+    let triangle_edge = triangle.vertex1().subtract(triangle.vertex0());
+    let point_edge = intersection.position.subtract(triangle.vertex0());
+    let edges_cross_product = triangle_edge.cross_product(point_edge);
+    if intersection.normal.dot_product(edges_cross_product) < 0.0 {
         return None;
     }
 
-    let triangleEdge = triangle.vertex2().subtract(triangle.vertex1());
-    let pointEdge = intersection.position.subtract(triangle.vertex1());
-    let edgesCrossProduct = triangleEdge.cross_product(pointEdge);
-    if intersection.normal.dot_product(edgesCrossProduct) < 0.0 {
+    let triangle_edge = triangle.vertex2().subtract(triangle.vertex1());
+    let point_edge = intersection.position.subtract(triangle.vertex1());
+    let edges_cross_product = triangle_edge.cross_product(point_edge);
+    if intersection.normal.dot_product(edges_cross_product) < 0.0 {
         return None;
     }
 
-    let triangleEdge = triangle.vertex0().subtract(triangle.vertex2());
-    let pointEdge = intersection.position.subtract(triangle.vertex2());
-    let edgesCrossProduct = triangleEdge.cross_product(pointEdge);
-    if intersection.normal.dot_product(edgesCrossProduct) < 0.0 {
+    let triangle_edge = triangle.vertex0().subtract(triangle.vertex2());
+    let point_edge = intersection.position.subtract(triangle.vertex2());
+    let edges_cross_product = triangle_edge.cross_product(point_edge);
+    if intersection.normal.dot_product(edges_cross_product) < 0.0 {
         return None;
     }
 

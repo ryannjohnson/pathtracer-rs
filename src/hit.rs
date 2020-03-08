@@ -7,8 +7,3 @@ pub struct Hit {
     pub normal: Vector,
     // pub uv: UVCoordinate,
 }
-
-pub struct UVCoordinate {
-    x: f64,
-    y: f64,
-}
