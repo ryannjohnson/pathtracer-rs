@@ -18,7 +18,7 @@ impl ThreadRng {
 impl Rng for ThreadRng {
     fn next_f64(&mut self) -> f64 {
         let a = rand::RngCore::next_u64(&mut self.rng);
-        let mut b = a as f64 / std::f64::MAX;
+        let mut b = a as f64 / std::u64::MAX as f64;
 
         if b == std::f64::MAX {
             // TODO: Avoid this edge case somehow.
