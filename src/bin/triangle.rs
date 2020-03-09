@@ -24,11 +24,11 @@ fn main() -> image::ImageResult<()> {
 
     let s: Box<dyn scene::Scene> = Box::new(obj::ObjScene::new(&mut obj_file, &mut mtl_file));
 
-    let mut image_writer = Image::new(100, 100);
+    let mut image_writer = Image::new(1024, 1024);
 
     let settings = render::RenderSettings {
         bounce_depth: 5,
-        samples_per_ray: 50,
+        samples_per_ray: 1000,
     };
 
     render::render(&s, &camera, &mut image_writer, &settings);
