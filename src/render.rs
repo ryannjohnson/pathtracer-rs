@@ -1,5 +1,7 @@
 use super::camera::Camera;
 use super::color::{Color, BLACK};
+use super::material::MaterialSampler;
+use super::ray::Ray;
 use super::random as local_random;
 use super::scene::Scene;
 use crossbeam_channel;
@@ -75,7 +77,7 @@ pub fn render<'a>(
                                 let y_rand =
                                     local_random::Rng::next_f64(&mut thread_random) * y_step;
                                 let ray = camera.cast(&mut thread_random, x + x_rand, y + y_rand);
-                                let sample = scene.sample(&mut random, ray, settings.bounce_depth);
+                                let sample = sample_scene(&mut random, &scene, ray, settings.bounce_depth);
                                 color = color.add(sample);
                             }
                             color = color.multiply(color_multiplier);
@@ -132,4 +134,33 @@ struct PixelMessage {
     pub x_pixel: usize,
     pub y_pixel: usize,
     pub color: Color,
+}
+
+fn sample_scene(random: &mut Box<dyn local_random::Rng>, scene: &Box<dyn Scene>, ray: Ray, bounce_depth: usize) -> Color {
+    if bounce_depth == 0 {
+        return BLACK;
+    }
+
+    let (hit, material) = match scene.intersect(ray) {
+        Some(a) => a,
+        None => return BLACK,
+    };
+
+    let bouncer = Box::new(Sampler {
+        scene: scene,
+        bounce_depth: bounce_depth - 1,
+    });
+
+    material.sample(random, hit, bouncer)
+}
+
+struct Sampler<'a> {
+    scene: &'a Box<dyn Scene>,
+    bounce_depth: usize,
+}
+
+impl<'a> MaterialSampler for Sampler<'a> {
+    fn sample(&self, random: &mut Box<dyn local_random::Rng>, ray: Ray) -> Color {
+        sample_scene(random, self.scene, ray, self.bounce_depth)
+    }
 }
